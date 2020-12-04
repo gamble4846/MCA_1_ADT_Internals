@@ -1,0 +1,96 @@
+======================================================================================================
+QUESTION 1
+======================================================================================================
+
+DECLARE      
+    c_WORKER_ID worker_097.WORKER_ID%type;    
+    c_FIRST_NAME worker_097.FIRST_NAME%type;    
+    c_LAST_NAME worker_097.LAST_NAME%type;    
+    c_DEPARTMENT worker_097.DEPARTMENT%type;    
+    
+    no_of_co number(2) := 0;    
+    
+    flag BOOLEAN := true;    
+    
+    WORKER_ID_IN number(6) := 0;     
+    
+    CURSOR worker_C is       
+           SELECT WORKER_ID,FIRST_NAME,LAST_NAME,DEPARTMENT FROM worker_097;     
+    
+    WorkerDoesNotExist EXCEPTION;     
+BEGIN    
+    WORKER_ID_IN := :WORKER_ID_IN;    
+    
+    OPEN worker_C;      
+    LOOP      
+    FETCH worker_C into c_WORKER_ID, c_FIRST_NAME, c_LAST_NAME, c_DEPARTMENT;      
+        EXIT WHEN worker_C%notfound;      
+        if(WORKER_ID_IN = c_WORKER_ID) then    
+            dbms_output.put_line('Worker ID: '||c_WORKER_ID);    
+            dbms_output.put_line('Full Name: '||c_FIRST_NAME||' '||c_LAST_NAME);    
+            dbms_output.put_line('Worker ID: '||c_DEPARTMENT);    
+    
+            SELECT count(WORKER_ID) INTO no_of_co    
+            FROM worker_097    
+            WHERE DEPARTMENT = c_DEPARTMENT;    
+                
+            no_of_co := no_of_co - 1;    
+    
+            dbms_output.put_line('Number of Co-workers: '||no_of_co);    
+    
+            flag := false;      
+        END if;     
+    END LOOP;     
+    CLOSE worker_C;    
+    
+    if (flag) then    
+        RAISE WorkerDoesNotExist;    
+    END if;    
+    
+EXCEPTION     
+   WHEN WorkerDoesNotExist THEN    
+        dbms_output.put_line('(-----------NO WORKER FOUND-----------)');    
+        dbms_output.put_line('No Worker has WORKER_ID : '||WORKER_ID_IN);       
+END
+
+======================================================================================================
+
+
+
+
+
+======================================================================================================
+QUESTION 2
+======================================================================================================
+
+DECLARE    
+    c_WORKER_ID worker_097.WORKER_ID%type;    
+    c_FIRST_NAME worker_097.FIRST_NAME%type;  
+    c_LAST_NAME worker_097.LAST_NAME%type;  
+  
+    c_WORKER_TITLE title_097.WORKER_TITLE%type;  
+    AFFECTED_FROM title_097.AFFECTED_FROM%type;  
+  
+    fullname varchar(30) := ' ';  
+  
+    CURSOR worker_title_C is     
+            SELECT worker_097.WORKER_ID, worker_097.FIRST_NAME, worker_097.LAST_NAME, title_097.WORKER_TITLE,title_097.AFFECTED_FROM    
+            FROM worker_097    
+            INNER JOIN title_097 ON worker_097.WORKER_ID=title_097.WORKER_REF_ID;    
+    
+BEGIN     
+    OPEN worker_title_C;    
+    dbms_output.put_line('Worker Title Details:');  
+    dbms_output.put_line(RPAD('Worker Title', 20, ' ')||RPAD('Woker ID', 10, ' ')||RPAD('Full Name', 20, ' ')||RPAD('Affected From', 15, ' '));  
+    dbms_output.put_line(RPAD('-', 65, '-'));  
+    LOOP    
+    FETCH worker_title_C into c_WORKER_ID, c_FIRST_NAME, c_LAST_NAME, c_WORKER_TITLE, AFFECTED_FROM;    
+        EXIT WHEN worker_title_C%notfound;    
+            fullname := CONCAT(CONCAT(c_FIRST_NAME, ' '),c_LAST_NAME);  
+            dbms_output.put_line(RPAD(c_WORKER_TITLE, 20, ' ')||RPAD(c_WORKER_ID, 10, ' ')||RPAD(fullname, 20, ' ')||RPAD(AFFECTED_FROM, 15, ' '));  
+    END LOOP;    
+    dbms_output.put_line(RPAD('-', 65, '-'));  
+    CLOSE worker_title_C;    
+END 
+
+======================================================================================================
